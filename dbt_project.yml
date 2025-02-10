@@ -1,0 +1,42 @@
+name: 'customer_360'
+version: '1.0.0'
+config-version: 2
+
+profile: 'customer_360'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  customer_360:
+    materialized: view
+    staging:
+      materialized: view
+      tags: ["daily"]
+    intermediate:
+      materialized: table
+      tags: ["daily"]
+    marts:
+      materialized: table
+      tags: ["daily", "business_critical"]
+
+seeds:
+  customer_360:
+    enabled: true
+
+snapshots:
+  customer_360:
+    target_schema: snapshots
+    strategy: timestamp
+    updated_at: updated_at
+
+vars:
+  dbt_date:time_zone: 'America/New_York'

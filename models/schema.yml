@@ -1,0 +1,69 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: Staged customer data from TPC-H
+    columns:
+      - name: customer_id
+        description: Primary key of the customers table
+        tests:
+          - unique
+          - not_null
+      - name: customer_name
+        description: Full name of the customer
+        tests:
+          - not_null
+      - name: account_balance
+        description: Current account balance
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: -1000000  # Allowing for negative balances
+              max_value: 10000000
+
+  - name: stg_orders
+    description: Staged order data from TPC-H
+    columns:
+      - name: order_id
+        description: Primary key of the orders table
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: Foreign key to customers table
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+
+  - name: int_customer_value_metrics
+    description: Intermediate model calculating customer value metrics using RFM scoring
+    columns:
+      - name: customer_id
+        description: Primary key
+        tests:
+          - unique
+          - not_null
+      - name: rfm_score
+        description: Combined RFM (Recency, Frequency, Monetary) score
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 20  # Minimum possible score
+              max_value: 100 # Maximum possible score
+
+  - name: customer_360
+    description: Comprehensive customer view combining all customer-related data
+    columns:
+      - name: customer_id
+        description: Primary key
+        tests:
+          - unique
+          - not_null
+      - name: customer_value_score
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 150
